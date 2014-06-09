@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Run_tracker</string>
+    <string name="action_settings">Settings</string>
+    <string name="StartText">Start</string>
+    <string name="StopText">Stop</string>
+    <string name="PauseText">Pause</string>
+    <string name="Distance">0 m  </string>
+    <string name="Paused">Paused</string>
+    <string name="Stoped">Stoped</string>
+    <string name="Running">Running</string>
+
+</resources>
