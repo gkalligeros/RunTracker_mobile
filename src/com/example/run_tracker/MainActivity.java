@@ -46,15 +46,17 @@ public class MainActivity extends ActionBarActivity implements
 	int mDistance = 0;// distance covered
 	private TextView mDistanceText;
 	private TextView mStatus;
-    private Chronometer mTimer;
+	private Timer mTimer;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-	
+
 		setContentView(R.layout.activity_main);
 		mDistanceText = (TextView) findViewById(R.id.dst);
 		mStatus = (TextView) findViewById(R.id.status);
-		mTimer = (Chronometer) findViewById(R.id.chronometer1);
+		mTimer = new Timer();
+		mTimer.setTimer((Chronometer) findViewById(R.id.chronometer1));
 		setUpMapIfNeeded();
 		mLocationClient = new LocationClient(this, this, this);
 		mMap.setMyLocationEnabled(true);
@@ -128,6 +130,7 @@ public class MainActivity extends ActionBarActivity implements
 		Log.v(TAG, "onStartB");
 		is_tracking = true; // Start tracking TODO add timer and start timer
 		mStatus.setText(R.string.Running);
+		mTimer.startTimer();
 
 	}
 
@@ -146,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements
 		Log.v(TAG, "onPauseB");
 		is_tracking = false; // Stop tracking TODO add timer and stop timer
 		mStatus.setText(R.string.Paused);
-
+		mTimer.stopTimer();
 	}
 
 	// Button Listeners ---------------------------------------------------
@@ -191,10 +194,17 @@ public class MainActivity extends ActionBarActivity implements
 						.add(new LatLng(prev.getLatitude(), prev.getLongitude()),
 								new LatLng(arg0.getLatitude(), arg0
 										.getLongitude())).width(2)
-						.color(Color.RED));
+						.color(Color.GREEN));
 				prev = arg0;
 				mDistance += 5;
 				mDistanceText.setText(mDistance + " m");
+			} else {
+				mMap.addPolyline(new PolylineOptions()
+						.add(new LatLng(prev.getLatitude(), prev.getLongitude()),
+								new LatLng(arg0.getLatitude(), arg0
+										.getLongitude())).width(2)
+						.color(Color.RED));
+				prev = arg0;
 			}
 
 		} else {
