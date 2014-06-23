@@ -12,61 +12,96 @@ portions of the Software.THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF A
  THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 package com.example.run_tracker;
 
-import android.graphics.Color;
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.os.IBinder;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Chronometer;
-import android.widget.TextView;
-import android.widget.Toast;
+import com.example.run_tracker.TrackingService.LocalBinder;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolylineOptions;
+public class MainActivity extends FragmentActivity implements
+		android.app.ActionBar.TabListener {
 
-public class MainActivity extends ActionBarActivity implements
-		GooglePlayServicesClient.ConnectionCallbacks,
-		GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
-
-	private String TAG = "Trackerr";
-	private GoogleMap mMap;
-	private LocationClient mLocationClient;
+	private String TAG = "MTrackerr";
 	boolean is_tracking = false;
 	Location prev = null;
 	int mDistance = 0;// distance covered
-	private TextView mDistanceText;
-	private TextView mStatus;
-	private Timer mTimer;
+	 TrackingService myService;
+	boolean isBound = false;
 
+	public  TrackingService getMyService() {
+		return myService;
+	}
+
+	public void setMyService(TrackingService myService) {
+		this.myService = myService;
+	}
+
+	private ViewPager viewPager;
+	private TabsPagerAdapter mAdapter;
+	private android.app.ActionBar actionBar;
+
+	private String[] tabs = { "run", "stats", "profile" };
+
+	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setContentView(R.layout.activity_main);
-		mDistanceText = (TextView) findViewById(R.id.dst);
-		mStatus = (TextView) findViewById(R.id.status);
-		mTimer = new Timer();
-		mTimer.setTimer((Chronometer) findViewById(R.id.chronometer1));
-		setUpMapIfNeeded();
-		mLocationClient = new LocationClient(this, this, this);
-		mMap.setMyLocationEnabled(true);
-		if (is_tracking) {
-			Log.v(TAG, "is_tracking");
 
-		} else {
-			Log.v(TAG, "is_not_tracking");
+		viewPager = (ViewPager) findViewById(R.id.pager);
+		actionBar = getActionBar();
+		mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+
+		viewPager.setAdapter(mAdapter);
+		actionBar.setHomeButtonEnabled(false);
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		for (String tab_name : tabs) {
+			actionBar.addTab(actionBar.newTab().setText(tab_name)
+					.setTabListener(this));
+
 		}
+		 viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			 
+	            @Override
+	            public void onPageSelected(int position) {
+	                // on changing the page
+	                // make respected tab selected
+	                actionBar.setSelectedNavigationItem(position);
+	            }
+	 
+	            @Override
+	            public void onPageScrolled(int arg0, float arg1, int arg2) {
+	            }
+	 
+	            @Override
+	            public void onPageScrollStateChanged(int arg0) {
+	            }
+	        });
 		Log.v(TAG, "onCreate");
+	}
+
+	public void onPause() {
+		super.onPause();
+		Log.v(TAG, "onPause");
+		unbindService(myConnection);
+
+	}
+
+	protected void onResume() {
+		super.onResume();
+		Intent intent = new Intent(this, TrackingService.class);
+		bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
 
 	}
 
@@ -84,17 +119,17 @@ public class MainActivity extends ActionBarActivity implements
 		Log.v(TAG, "onStart");
 
 		super.onStart();
-		if (!mLocationClient.isConnected()) {
-			mLocationClient.connect();
-		}
+		/*
+		 * if (!mLocationClient.isConnected()) { mLocationClient.connect(); }
+		 */
 
 	}
 
 	public void onDestroy() {
-		Log.v(TAG, "onDestroy");
 
 		super.onDestroy();
-		mLocationClient.disconnect();
+		// unbindService(myConnection);
+		Log.v(TAG, "onDestroy");
 
 	}
 
@@ -110,113 +145,44 @@ public class MainActivity extends ActionBarActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void setUpMapIfNeeded() {
-		// Do a null check to confirm that we have not already instantiated the
-		// map.
-		if (mMap == null) {
-			// Try to obtain the map from the SupportMapFragment.
-			mMap = ((SupportMapFragment) getSupportFragmentManager()
-					.findFragmentById(R.id.map)).getMap();
-			// Check if we were successful in obtaining the map.
 
+	private ServiceConnection myConnection = new ServiceConnection() {
+
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			Log.v(TAG, "onServiceConnected");
+
+			LocalBinder binder = (LocalBinder) service;
+			myService = binder.getService();
+			isBound = true;
 		}
 
-	}
-
-	// Button Listeners ---------------------------------------------------
-
-	// when Start is Clicked
-	public void onStartB(View view) {
-		Log.v(TAG, "onStartB");
-		is_tracking = true; // Start tracking TODO add timer and start timer
-		mStatus.setText(R.string.Running);
-		mTimer.startTimer();
-
-	}
-
-	// when Stop is Clicked
-
-	public void onStopB(View view) {
-		// TODO save run (confirm first)
-		onLocationChanged(mLocationClient.getLastLocation());
-		mStatus.setText(R.string.Stoped);
-		Log.v(TAG, "onStopB");
-
-	}
-
-	// When Pause is Clicked
-	public void onPauseB(View view) {
-		Log.v(TAG, "onPauseB");
-		is_tracking = false; // Stop tracking TODO add timer and stop timer
-		mStatus.setText(R.string.Paused);
-		mTimer.stopTimer();
-	}
-
-	// Button Listeners ---------------------------------------------------
-
-	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		// TODO Auto-generated method stub
-		Log.v(TAG, "onConnectionFailed");
-
-	}
-
-	@Override
-	public void onConnected(Bundle arg0) {
-		// TODO Auto-generated method stub
-		Log.v(TAG, "onConnected");
-		LocationRequest mLocationRequest = LocationRequest.create();
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-		mLocationRequest.setInterval(5000);
-		mLocationRequest.setSmallestDisplacement(5);
-		mLocationClient.requestLocationUpdates(mLocationRequest, this);
-
-	}
-
-	@Override
-	public void onDisconnected() {
-		// TODO Auto-generated method stub
-		Log.v(TAG, "onDisconnected");
-
-	}
-
-	// Location Listeners Methods --------------------------------------
-	@Override
-	public void onLocationChanged(Location arg0) {
-		Log.v(TAG, "onLocationChanged");
-		Toast.makeText(this, "onLocationChanged", Toast.LENGTH_SHORT).show();
-		// TODO (maybe i will save all locations to a list )
-
-		if (prev != null) {
-
-			if (is_tracking) {
-				mMap.addPolyline(new PolylineOptions()
-						.add(new LatLng(prev.getLatitude(), prev.getLongitude()),
-								new LatLng(arg0.getLatitude(), arg0
-										.getLongitude())).width(2)
-						.color(Color.GREEN));
-				prev = arg0;
-				mDistance += 5;
-				mDistanceText.setText(mDistance + " m");
-			} else {
-				mMap.addPolyline(new PolylineOptions()
-						.add(new LatLng(prev.getLatitude(), prev.getLongitude()),
-								new LatLng(arg0.getLatitude(), arg0
-										.getLongitude())).width(2)
-						.color(Color.RED));
-				prev = arg0;
-			}
-
-		} else {
-			if (is_tracking) {
-				Toast.makeText(this, "first_waypoint", Toast.LENGTH_SHORT)
-						.show();
-				Log.v(TAG, "first_waypoint");
-				prev = arg0;// we are at the first point of run
-			}
+		public void onServiceDisconnected(ComponentName arg0) {
+			isBound = false;
 		}
 
+	};
+
+	@Override
+	public void onTabReselected(android.app.ActionBar.Tab arg0,
+			android.app.FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
+
 	}
 
-	// Location Listener Methods --------------------------------------
+	@Override
+	public void onTabSelected(android.app.ActionBar.Tab arg0,
+			android.app.FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
+		viewPager.setCurrentItem(arg0.getPosition());
+
+
+	}
+
+	@Override
+	public void onTabUnselected(android.app.ActionBar.Tab arg0,
+			android.app.FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

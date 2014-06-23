@@ -10,5 +10,6 @@
     <string name="Paused">Paused</string>
     <string name="Stoped">Stoped</string>
     <string name="Running">Running</string>
+    <string name="stub">stub</string>
 
 </resources>
