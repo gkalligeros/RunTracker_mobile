@@ -28,7 +28,7 @@
                 android:id="@+id/status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/Paused"
+                android:text="@string/Stoped"
                 android:textSize="20sp" />
         </TableRow>
 
@@ -42,12 +42,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/StartText" />
-
-            <Button
-                android:id="@+id/pause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/PauseText" />
 
             <Button
                 android:id="@+id/stop"
