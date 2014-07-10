@@ -13,46 +13,84 @@
 package com.example.run_tracker;
 
 import android.os.SystemClock;
+import android.util.Log;
 import android.widget.Chronometer;
 
-public class Timer {
-	private Chronometer mTimer;
-	private Boolean mFirstStart = true;
-	private long mTimeWhenStopped;
+public class Timer
+{
 
-	public Chronometer getTimer() {
-		return mTimer;
-	}
+    private Chronometer mTimer;
+    private Boolean mFirstStart = true;
+    private long mTimeWhenStopped;
+    private String TAG = "Timer";
+    private long base;
 
-	public void setTimer(Chronometer timer) {
-		mTimer = timer;
-	}
+    public Chronometer getTimer()
+    {
+	return mTimer;
+    }
 
-	public void startTimer() {
-		if (mFirstStart) {
-			mTimer.setBase(SystemClock.elapsedRealtime());
-			mTimer.start();
-			mFirstStart=false; 
-			
-		}
-		else
-		{
-			mTimer.setBase(SystemClock.elapsedRealtime() - mTimeWhenStopped);
-		    mTimer.start();
-		}
-		
+    public void setTimer(Chronometer timer)
+    {
+	mTimer = timer;
+    }
 
-	}
-
-	public void stopTimer() {
-		mTimer.stop();
-		mTimeWhenStopped = SystemClock.elapsedRealtime() - mTimer.getBase();
-	}
-
-	public void resetTimer() {
-		mTimer.stop();
+    public void startTimer()
+    {
+	if (mFirstStart)
+	{
+	    base = SystemClock.elapsedRealtime();
 	    mTimer.setBase(SystemClock.elapsedRealtime());
-	    mTimeWhenStopped = 0;
+	    mTimer.start();
+	    mFirstStart = false;
+	    Log.v(TAG, "startTimer mFirstStart" + mTimer.getBase());
+
+	} else
+	{
+	    Log.v(TAG, "base " + base);
+	    mTimer.setBase(base);
+	    mTimer.start();
+	    Log.v(TAG, "startTimer not_mFirstStart " + mTimer.getBase());
+
 	}
 
+    }
+
+    public Boolean getFirstStart()
+    {
+        return mFirstStart;
+    }
+
+    public void setFirstStart(Boolean firstStart)
+    {
+        mFirstStart = firstStart;
+    }
+
+    public void stopTimer()
+    {
+	mTimer.stop();
+	setTimeWhenStopped(SystemClock.elapsedRealtime() - mTimer.getBase());
+    }
+
+    public void resetTimer()
+    {
+	mTimer.stop();
+	mTimer.setBase(SystemClock.elapsedRealtime());
+	setTimeWhenStopped(0);
+    }
+
+    public long getTimeWhenStopped()
+    {
+	return mTimeWhenStopped;
+    }
+
+    public void setTimeWhenStopped(long timeWhenStopped)
+    {
+	mTimeWhenStopped = timeWhenStopped;
+    }
+
+    public long getBase()
+    {
+	return mTimer.getBase();
+    }
 }

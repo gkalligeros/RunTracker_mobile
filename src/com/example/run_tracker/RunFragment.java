@@ -40,13 +40,13 @@ public class RunFragment extends Fragment implements OnClickListener,
 {
     private Button mStart, mStop;
     private String TAG = "RunFragment";
-    private float ZOOM_LEVEL = 16;
+    private float ZOOM_LEVEL = 17;
 
     private GoogleMap mMap;
     int mDistance = 0;// distance covered
     private TextView mDistanceText;
     private TextView mStatus;
-    private Timer mTimer;
+    private Timer mTimer = new Timer();;
     private CustomMapFragment mMapFragment;
     PolylineOptions options = new PolylineOptions();;
 
@@ -74,6 +74,14 @@ public class RunFragment extends Fragment implements OnClickListener,
     };
 
     @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+	super.onCreate(savedInstanceState);
+	Log.v(TAG, "onCreate");
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	    Bundle savedInstanceState)
     {
@@ -83,16 +91,17 @@ public class RunFragment extends Fragment implements OnClickListener,
 	mDistanceText = (TextView) rootView.findViewById(R.id.dst);
 	mStatus = (TextView) rootView.findViewById(R.id.status);
 	mStop = (Button) rootView.findViewById(R.id.stop);
-	mTimer = new Timer();
 	mTimer.setTimer((Chronometer) rootView.findViewById(R.id.chronometer1));
-
 	mStart = (Button) rootView.findViewById(R.id.start);
-
 	mStart.setOnClickListener(this);
 	mStop.setOnClickListener(this);
 	mMapFragment = CustomMapFragment.newInstance();
 	getChildFragmentManager().beginTransaction()
 		.replace(R.id.myfragment, mMapFragment).commit();
+	if (!mTimer.getFirstStart())
+	{
+	    mTimer.startTimer();
+	}
 	Log.v(TAG, "onCreateView");
 
 	return rootView;
@@ -104,9 +113,16 @@ public class RunFragment extends Fragment implements OnClickListener,
 	super.onPause();
 	LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(
 		mMessageReceiver);
-
 	Log.v(TAG, "onPause");
+	// getActivity().getIntent().p;
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle state)
+    {
+	super.onSaveInstanceState(state);
+	Log.v(TAG, "onSaveInstanceState");
     }
 
     public void onResume()
@@ -134,7 +150,7 @@ public class RunFragment extends Fragment implements OnClickListener,
 	    }
 	    if (((((MainActivity) getActivity()).getMyService().isStarted())))
 	    {
-		Log.v(TAG, "InIf1");
+		Log.v(TAG, "InIf2");
 
 		mStatus.setText(R.string.Running);
 
@@ -142,6 +158,7 @@ public class RunFragment extends Fragment implements OnClickListener,
 	    LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
 		    mMessageReceiver, new IntentFilter("location_changed"));
 	}
+
 	Log.v(TAG, "onResume");
 
     }

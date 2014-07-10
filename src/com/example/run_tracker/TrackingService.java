@@ -37,16 +37,13 @@ public class TrackingService extends Service implements
 {
     private static final String TAG = "ServiceTrackerr";
     private List<LatLng> mCoursePoints = new ArrayList<LatLng>();
-    private LatLng mLastPoint; 
+    private LatLng mLastPoint;
     // points
 
     private final IBinder mBinder = new LocalBinder();
-    private boolean  mStarted = false;
+    private boolean mStarted = false;
     private int mDistance = 0;
     private LocationClient mLocationClient;
-
-    
-    
 
     public class LocalBinder extends Binder
     {
@@ -128,11 +125,7 @@ public class TrackingService extends Service implements
     public void onConnected(Bundle arg0)
     {
 	Log.v(TAG, "onConnected");
-	LocationRequest mLocationRequest = LocationRequest.create();
-	mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-	mLocationRequest.setInterval(5000);
-	mLocationRequest.setSmallestDisplacement(5);
-	mLocationClient.requestLocationUpdates(mLocationRequest, this);
+        
 	// TODO Auto-generated method stub
 
     }
@@ -156,13 +149,20 @@ public class TrackingService extends Service implements
 	return mStarted;
     }
 
-  
-
     public void setStarted(boolean started)
-    {	
+    {
 	Log.v(TAG, "setStarted");
 
-        mStarted = started;
+	mStarted = started;
+	if (started)
+	{
+	    LocationRequest mLocationRequest = LocationRequest.create();
+	    mLocationRequest
+		    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+	    mLocationRequest.setInterval(5000);
+	    mLocationRequest.setSmallestDisplacement(5);
+	    mLocationClient.requestLocationUpdates(mLocationRequest, this);
+	}
     }
 
     public int getDistance()
@@ -172,12 +172,12 @@ public class TrackingService extends Service implements
 
     public LatLng getLastPoint()
     {
-        return mLastPoint;
+	return mLastPoint;
     }
 
     public void setLastPoint(LatLng lastPoint)
     {
-        mLastPoint = lastPoint;
+	mLastPoint = lastPoint;
     }
 
     public void setDistance(int distance)
