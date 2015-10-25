@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:weightSum="1.0" >
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight=".5"
+        android:divider="@color/list_divider"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_row_selector" />
+
+    <LinearLayout
+        android:id="@+id/map_container"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight=".5"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/refresh"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:text="@string/Refresh" />
+    </LinearLayout>
+
+</LinearLayout>
